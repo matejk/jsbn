@@ -27,26 +27,21 @@ if(rng_pool == null) {
   rng_pool = new Array();
   rng_pptr = 0;
   var t;
-  var theCrypto;
-  if (typeof window !== "undefined") {
-        theCrypto = window.crypto;
+  if(typeof window !== "undefined" && window.crypto) {
+    if (window.crypto.getRandomValues) {
+      // Use webcrypto if available
+      var ua = new Uint8Array(32);
+      window.crypto.getRandomValues(ua);
+      for(t = 0; t < 32; ++t)
+        rng_pool[rng_pptr++] = ua[t];
+    }
+    if(navigator.appName == "Netscape" && navigator.appVersion < "5") {
+      // Extract entropy (256 bits) from NS4 RNG if available
+      var z = window.crypto.random(32);
+      for(t = 0; t < z.length; ++t)
+        rng_pool[rng_pptr++] = z.charCodeAt(t) & 255;
+    }
   }
-  else if (typeof crypto !== "undefined") {
-    theCrypto = crypto;
-  }
-  if(theCrypto && theCrypto.getRandomValues) {
-    // Use webcrypto if available
-    var ua = new Uint8Array(32);
-    theCrypto.getRandomValues(ua);
-    for(t = 0; t < 32; ++t)
-      rng_pool[rng_pptr++] = ua[t];
-  }
-  if(navigator.appName == "Netscape" && navigator.appVersion < "5" && theCrypto) {
-    // Extract entropy (256 bits) from NS4 RNG if available
-    var z = theCrypto.random(32);
-    for(t = 0; t < z.length; ++t)
-      rng_pool[rng_pptr++] = z.charCodeAt(t) & 255;
-  }  
   while(rng_pptr < rng_psize) {  // extract some randomness from Math.random()
     t = Math.floor(65536 * Math.random());
     rng_pool[rng_pptr++] = t >>> 8;

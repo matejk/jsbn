@@ -27,7 +27,7 @@ function byte2Hex(b) {
 // PKCS#1 (type 2, random) pad input string s to n bytes, and return a bigint
 function pkcs1pad2(s,n) {
   if(n < s.length + 11) { // TODO: fix for utf-8
-    throw new RangeError("Message too long for RSA");
+    throw new Error("Message too long for RSA");
   }
   var ba = new Array();
   var i = s.length - 1;
